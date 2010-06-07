@@ -1,3 +1,4 @@
 config:
   site_path: _site
   memcached_hosts: localhost:11211, otherhost:11211
+  file_extensions: .css, .html, .jpg
