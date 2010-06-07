@@ -39,6 +39,8 @@ config = YAML::load(File.open(options[:config_file]))[:config]
 site_path = config[:site_path]
 memcached_hosts = %w[]
 config[:memcached_hosts].split(',').each { |host| memcached_hosts << host}
+file_extensions = Array.new
+config[:file_extensions].split(',').each { |ext| file_extensions << ext}
 #namespace = "rubyied"
 
 def get_files(a_dir)
@@ -48,7 +50,13 @@ def get_files(a_dir)
     if File.directory?(a_file)
       get_files(a_file).each { |b_file| files << "#{a_dir}/" + b_file }
     else
-      files << "#{a_dir}/" + a_file
+      if file_extensions.size > 0
+        file_extensions.each do |ext|
+          files << "#{a_dir}/" + a_file if a_file ~= /#{ext}/
+        end
+      else
+        files << "#{a_dir}/" + a_file
+      end
     end
   end
   Dir.chdir("..")
