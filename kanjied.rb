@@ -1,4 +1,5 @@
 #!/bin/env ruby
+require 'yaml'
 require 'rubygems'
 require 'memcache'
 require 'optparse'
@@ -7,20 +8,22 @@ options = {}
 OptionParser.new do |opts|
    opts.banner = "Usage: kanjied.rb [options]"
 
-   opts.on("-c", "--config", "Config file") do |config|
+   opts.on("-c FILE", "--config", "Config file") do |config|
      options[:config_file] = config
    end
 end.parse!
 
-exit(1) unless File.exist?(config)
+exit("file doesn't exist") unless File.exist?(options[:config_file])
 # loading config
-config = YAML::load(File.open(options[:config_file]))[:config]
+config = YAML::load(File.open(options[:config_file]))["config"]
 
-site_path = config[:site_path]
+site_path = config["site_path"]
 memcached_hosts = %w[]
-config[:memcached_hosts].split(',').each { |host| memcached_hosts << host}
-file_extensions = Array.new
-config[:file_extensions].split(',').each { |ext| file_extensions << ext}
+config["memcached_hosts"].split(',').each { |host| memcached_hosts << host}
+@file_extensions = Array.new
+if config["file_extensions"]
+  config["file_extensions"].split(',').each { |ext| @file_extensions << ext.gsub(' ','') }
+end
 #namespace = "rubyied"
 
 def get_files(a_dir)
@@ -30,9 +33,11 @@ def get_files(a_dir)
     if File.directory?(a_file)
       get_files(a_file).each { |b_file| files << "#{a_dir}/" + b_file }
     else
-      if file_extensions.size > 0
-        file_extensions.each do |ext|
-          files << "#{a_dir}/" + a_file if a_file ~= /#{ext}$/
+      if @file_extensions.size > 0
+        @file_extensions.each do |ext|
+          if a_file =~ /#{ext}$/
+            files << "#{a_dir}/" + a_file 
+          end
         end
       else
         files << "#{a_dir}/" + a_file
@@ -72,13 +77,15 @@ files.each do |a_file|
       # ooh bad, it's old, remove and reinsert new data
       CACHE.delete(a_file)
       printf(" deleted")
-      CACHE.add("/" + a_file,content)
+      CACHE.add(a_file,content)
       printf(" added !\n")
+    else
+      printf(" still ok\n")
     end
   else
     # not in there yet ?! come on jump in!
     printf(" absent")
-    CACHE.add("/" + a_file,content)
+    CACHE.add(a_file,content)
     printf(" added !\n")
   end
 end
