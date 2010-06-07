@@ -1,0 +1,9 @@
+h2. Kanjied
+
+Kanjied is a little script to populate a memcached server. It use a simple yml file to configure where the root of your the content to insert is.
+
+Check the _config.yaml.sample_ file to see what's possible.
+
+Requirements : the memcache-client gem.
+
+Kanjied is released under the MIT license, see LICENSE file.
