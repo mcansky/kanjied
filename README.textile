@@ -2,7 +2,10 @@ h2. Kanjied
 
 Kanjied is a little script to populate a memcached server. It use a simple yml file to configure where the root of your the content to insert is.
 
-Check the _config.yaml.sample_ file to see what's possible.
+How it works ? kanjied check the folder you pass it for files, then connects to the memcached server you told him to connect to, check if each file is in, up to date, or not and add the file if needed.
+It can also filter the files using extensions.
+
+Check the _config.yaml.sample_.
 
 Requirements : the memcache-client gem.
 
