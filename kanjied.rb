@@ -22,11 +22,23 @@
 
 require 'rubygems'
 require 'memcache'
+require 'optparse'
 
-# change this
-site_path = "_site"
-memcache_hosts = %w[localhost:11211]
-# memcache_hosts = %w[localhost:11211 two.example.com:11211]
+options = {}
+OptionParser.new do |opts|
+   opts.banner = "Usage: kanjied.rb [options]"
+
+   opts.on("-c", "--config", "Config file") do |config|
+     options[:config_file] = config
+   end
+end.parse!
+
+# loading config
+config = YAML::load(File.open(options[:config_file]))[:config]
+
+site_path = config[:site_path]
+memcached_hosts = %w[]
+config[:memcached_hosts].split(',').each { |host| memcached_hosts << host}
 #namespace = "rubyied"
 
 def get_files(a_dir)
@@ -54,7 +66,7 @@ Dir.chdir(site_path)
 
 # memcached stuff
 ## connection :
-CACHE = MemCache.new memcache_hosts
+CACHE = MemCache.new memcached_hosts
 
 # going throught all the files
 files.each do |a_file|
